@@ -66,12 +66,12 @@ class DockerWorker(Worker):
             raise DockerWorkerError('Missing input %s' % ke)
         except error.APIerror, ae:
             self.app_logger.warn(
-                'Unable to stop %s. Error: %s' params.get('container_name', ae))
+                'Unable to stop %s. Error: %s' % ( params.get('container_name', ae)))
             raise DockerWorkerError(
                 'No such container is running currently.' )
         except requests.exceptions.ConnectionError, ce:
             self.app_logger.warn(
-                'Unable to connect to %s. Error: %s' params.get('server_name', ce))
+                'Unable to connect to %s. Error: %s' % ( params.get('server_name', ce)))
             raise DockerWorkerError(
                 'Could not connect to the requested Docker Host' )
 
@@ -97,16 +97,16 @@ class DockerWorker(Worker):
         except KeyError, ke:
             output.error(
                 'Unable to remove container %s because of missing input %s' % (
-                    params.get('container_name', 'IMAGE_NOT_GIVEN'), ke))
+                    params.get ('container_name', 'IMAGE_NOT_GIVEN'), ke))
             raise DockerWorkerError('Missing input %s' % ke)
         except error.APIerror, ae:
             self.app_logger.warn(
-                'Unable to remove %s. Error: %s' params.get('container_name', ae))
+                'Unable to remove %s. Error: %s' % ( params.get ('container_name', ae)))
             raise DockerWorkerError(
                 'No such container exists on the server.' )
         except requests.exceptions.ConnectionError, ce:
             self.app_logger.warn(
-                'Unable to connect to %s. Error: %s' params.get('server_name', ce))
+                'Unable to connect to %s. Error: %s' % ( params.get ('server_name', ce)))
             raise DockerWorkerError(
                 'Could not connect to the requested Docker Host' )
 
@@ -132,16 +132,16 @@ class DockerWorker(Worker):
         except KeyError, ke:
             output.error(
                 'Unable to remove image %s because of missing input %s' % (
-                    params.get('image_name', 'IMAGE_NOT_GIVEN'), ke))
+                    params.get ('image_name', 'IMAGE_NOT_GIVEN'), ke))
             raise DockerWorkerError('Missing input %s' % ke)
         except error.APIerror, ae:
             self.app_logger.warn(
-                'Unable to remove %s. Error: %s' params.get('image_name', ae))
+                'Unable to remove %s. Error: %s' % ( params.get ('image_name', ae)))
             raise DockerWorkerError(
                 'No such image exists on the server.' )
         except requests.exceptions.ConnectionError, ce:
             self.app_logger.warn(
-                'Unable to connect to %s. Error: %s' params.get('server_name', ce))
+                'Unable to connect to %s. Error: %s' % ( params.get ('server_name', ce)))
             raise DockerWorkerError(
                 'Could not connect to the requested Docker Host' )
 
@@ -168,12 +168,12 @@ class DockerWorker(Worker):
         except KeyError, ke:
             output.error(
                 'Unable to pull image %s because of missing input %s' % (
-                    params.get('image_name', 'IMAGE_NOT_GIVEN'), ke))
+                    params.get ('image_name', 'IMAGE_NOT_GIVEN'), ke))
             raise DockerWorkerError('Missing input %s' % ke)
         #### Need to figure out how to raise fail on not find
         except requests.exceptions.ConnectionError, ce:
             self.app_logger.warn(
-                'Unable to connect to %s. Error: %s' params.get('server_name', ce))
+                'Unable to connect to %s. Error: %s' % ( params.get ('server_name', ce)))
             raise DockerWorkerError(
                 'Could not connect to the requested Docker Host' )
 
@@ -204,16 +204,16 @@ class DockerWorker(Worker):
         except KeyError, ke:
             output.error(
                 'Unable to create container %s because of missing input %s' % (
-                    params.get('container_name', 'IMAGE_NOT_GIVEN'), ke))
+                    params.get ('container_name', 'IMAGE_NOT_GIVEN'), ke))
             raise DockerWorkerError('Missing input %s' % ke)
         except error.APIerror, ae:
             self.app_logger.warn(
-                'Unable to remove %s. Error: %s' params.get('image_name', ae))
+                'Unable to remove %s. Error: %s' % ( params.get ('image_name', ae)))
             raise DockerWorkerError(
                 'No such image exists on the server.' )
         except requests.exceptions.ConnectionError, ce:
             self.app_logger.warn(
-                'Unable to connect to %s. Error: %s' params.get('server_name', ce))
+                'Unable to connect to %s. Error: %s' % ( params.get ('server_name', ce)))
             raise DockerWorkerError(
                 'Could not connect to the requested Docker Host' )
 
@@ -241,16 +241,16 @@ class DockerWorker(Worker):
         except KeyError, ke:
             output.error(
                 'Unable to start container %s because of missing input %s' % (
-                    params.get('container_name', 'IMAGE_NOT_GIVEN'), ke))
+                    params.get ('container_name', 'IMAGE_NOT_GIVEN'), ke))
             raise DockerWorkerError('Missing input %s' % ke)
         except requests.exceptions.ConnectionError, ce:
             self.app_logger.warn(
-                'Unable to connect to %s. Error: %s' params.get('server_name', ce))
+                'Unable to connect to %s. Error: %s' % ( params.get ('server_name', ce)))
             raise DockerWorkerError(
                 'Could not connect to the requested Docker Host' )
         except error.APIerror, ae:
             self.app_logger.warn(
-                'Unable to start %s. Error: %s' params.get('container_name', ae))
+                'Unable to start %s. Error: %s' % ( params.get ('container_name', ae)))
             raise DockerWorkerError(
                 'No such container exists' )
 
