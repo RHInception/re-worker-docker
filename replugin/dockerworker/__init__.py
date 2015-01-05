@@ -18,8 +18,7 @@ Docker worker.
 """
 
 from reworker.worker import Worker
-
-# Import docker lib here
+import docker import Client
 
 
 class DockerWorkerError(Exception):
@@ -55,26 +54,30 @@ class DockerWorker(Worker):
         params = body.get('parameters', {})
 
         try:
-            # TODO: Get required parameters here
             server_name = params['server_name']
             container_name = params['container_name']
-            insecure_registry = params['insecure_registry']
-
-        # TODO: docker call here
+            client = docker.Client(base_url = server_name,version = self._config['version'])
+            client.stop(container_name, timeout=10)
 
         except KeyError, ke:
             output.error(
                 'Unable to stop container %s because of missing input %s' % (
                     params.get('container_name', 'IMAGE_NOT_GIVEN'), ke))
             raise DockerWorkerError('Missing input %s' % ke)
-        # TODO: Catch any exceptions that may be raised by docker here
-        #       and wrap it in DockerWorkerError
+        except error.APIerror, ae:
+            self.app_logger.warn(
+                'Unable to stop %s. Error: %s' params.get('container_name', ae))
+            raise DockerWorkerError(
+                'No such container is running currently.' )
+        except requests.exceptions.ConnectionError, ce:
+            self.app_logger.warn(
+                'Unable to connect to %s. Error: %s' params.get('server_name', ce))
+            raise DockerWorkerError(
+                'Could not connect to the requested Docker Host' )
 
-    '''
-    TODO: use the same pattern as bove for each
     def remove_container(self, body, corr_id, output):
         """
-        Stops a single container.
+        Remove a single container.
 
         Parameters:
 
@@ -86,20 +89,170 @@ class DockerWorker(Worker):
         params = body.get('parameters', {})
 
         try:
-            # TODO: Get required parameters here
             server_name = params['server_name']
-            container_namge = params['container_name']
-
-        # TODO: docker call here
+            container_name = params['container_name']
+            client = docker.Client(base_url = server_name,version = self._config['version'])
+            client.remove(container_name)
 
         except KeyError, ke:
             output.error(
-                'Unable to stop container %s because of missing input %s' % (
+                'Unable to remove container %s because of missing input %s' % (
+                    params.get('container_name', 'IMAGE_NOT_GIVEN'), ke))
+            raise DockerWorkerError('Missing input %s' % ke)
+        except error.APIerror, ae:
+            self.app_logger.warn(
+                'Unable to remove %s. Error: %s' params.get('container_name', ae))
+            raise DockerWorkerError(
+                'No such container exists on the server.' )
+        except requests.exceptions.ConnectionError, ce:
+            self.app_logger.warn(
+                'Unable to connect to %s. Error: %s' params.get('server_name', ce))
+            raise DockerWorkerError(
+                'Could not connect to the requested Docker Host' )
+
+    def remove_image(self, body, corr_id, output):
+        """
+        Remove a single Image.
+
+        Parameters:
+
+        * body: The message body structure
+        * corr_id: The correlation id of the message
+        * output: The output object back to the user
+        """
+        # Get needed variables
+        params = body.get('parameters', {})
+
+        try:
+            server_name = params['server_name']
+            image_name = params['image_name']
+            client = docker.Client(base_url = server_name,version = self._config['version'])
+            client.remove(image_name)
+
+        except KeyError, ke:
+            output.error(
+                'Unable to remove image %s because of missing input %s' % (
                     params.get('image_name', 'IMAGE_NOT_GIVEN'), ke))
             raise DockerWorkerError('Missing input %s' % ke)
-        # TODO: Catch any exceptions that may be raised by docker here
-        #       and wrap it in DockerWorkerError
-    '''
+        except error.APIerror, ae:
+            self.app_logger.warn(
+                'Unable to remove %s. Error: %s' params.get('image_name', ae))
+            raise DockerWorkerError(
+                'No such image exists on the server.' )
+        except requests.exceptions.ConnectionError, ce:
+            self.app_logger.warn(
+                'Unable to connect to %s. Error: %s' params.get('server_name', ce))
+            raise DockerWorkerError(
+                'Could not connect to the requested Docker Host' )
+
+    def pull_image(self, body, corr_id, output):
+        """
+        Pull a single Image.
+
+        Parameters:
+
+        * body: The message body structure
+        * corr_id: The correlation id of the message
+        * output: The output object back to the user
+        """
+        # Get needed variables
+        params = body.get('parameters', {})
+
+        try:
+            server_name = params['server_name']
+            image_name = params['image_name']
+            insecure_registry = params['secure']
+            client = docker.Client(base_url = server_name,version = self._config['version'])
+            client.pull(image_name, insecure_registry = secure)
+
+        except KeyError, ke:
+            output.error(
+                'Unable to pull image %s because of missing input %s' % (
+                    params.get('image_name', 'IMAGE_NOT_GIVEN'), ke))
+            raise DockerWorkerError('Missing input %s' % ke)
+        #### Need to figure out how to raise fail on not find
+        except requests.exceptions.ConnectionError, ce:
+            self.app_logger.warn(
+                'Unable to connect to %s. Error: %s' params.get('server_name', ce))
+            raise DockerWorkerError(
+                'Could not connect to the requested Docker Host' )
+
+
+    def create_container(self, body, corr_id, output):
+        """
+        Create a single container.
+
+        Parameters:
+
+        * body: The message body structure
+        * corr_id: The correlation id of the message
+        * output: The output object back to the user
+        """
+        # Get needed variables
+        params = body.get('parameters', {})
+
+        try:
+            server_name = params['server_name']
+            image_name = params['image_name']
+            container_name = params['container_name']
+            container_command = params['container_command']
+            container_hostname = params['container_hostname']
+            container_port = params['container_port']
+            client = docker.Client(base_url = server_name,version = self._config['version'])
+            client.create_container(image_name, name = container_name, command = container_command, hostname = container_hostname, ports = [container_port])
+
+        except KeyError, ke:
+            output.error(
+                'Unable to create container %s because of missing input %s' % (
+                    params.get('container_name', 'IMAGE_NOT_GIVEN'), ke))
+            raise DockerWorkerError('Missing input %s' % ke)
+        except error.APIerror, ae:
+            self.app_logger.warn(
+                'Unable to remove %s. Error: %s' params.get('image_name', ae))
+            raise DockerWorkerError(
+                'No such image exists on the server.' )
+        except requests.exceptions.ConnectionError, ce:
+            self.app_logger.warn(
+                'Unable to connect to %s. Error: %s' params.get('server_name', ce))
+            raise DockerWorkerError(
+                'Could not connect to the requested Docker Host' )
+
+    def start_container(self, body, corr_id, output):
+        """
+        Start a single container.
+
+        Parameters:
+
+        * body: The message body structure
+        * corr_id: The correlation id of the message
+        * output: The output object back to the user
+        """
+        # Get needed variables
+        params = body.get('parameters', {})
+
+        try:
+            server_name = params['server_name']
+            container_name = params['container_name']
+            container_binds = params['container_binds']
+            port_bindings = params['port_bindings']
+            client = docker.Client(base_url=server_name,version=self._config['version'])
+            client.start_container(container=container_name, container_binds = container_binds, port_bindings = [port_bindings])
+
+        except KeyError, ke:
+            output.error(
+                'Unable to start container %s because of missing input %s' % (
+                    params.get('container_name', 'IMAGE_NOT_GIVEN'), ke))
+            raise DockerWorkerError('Missing input %s' % ke)
+        except requests.exceptions.ConnectionError, ce:
+            self.app_logger.warn(
+                'Unable to connect to %s. Error: %s' params.get('server_name', ce))
+            raise DockerWorkerError(
+                'Could not connect to the requested Docker Host' )
+        except error.APIerror, ae:
+            self.app_logger.warn(
+                'Unable to start %s. Error: %s' params.get('container_name', ae))
+            raise DockerWorkerError(
+                'No such container exists' )
 
     def process(self, channel, basic_deliver, properties, body, output):
         """
@@ -137,7 +290,7 @@ class DockerWorker(Worker):
             elif subcommand == 'CreateContainer':
                 cmd_method = self.create_container
             elif subcommand == 'StartContainer':
-                cmd_method = self.start_containerl
+                cmd_method = self.start_container
             else:
                 self.app_logger.warn(
                     'Could not find the implementation of subcommand %s' % (
