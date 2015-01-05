@@ -56,7 +56,7 @@ class DockerWorker(Worker):
         try:
             server_name = params['server_name']
             container_name = params['container_name']
-            client = docker.Client(base_url = server_name,version = self._config['version'])
+            client = docker.Client(base_url=server_name, version=self._config['version'])
             client.stop(container_name, timeout=10)
 
         except KeyError, ke:
@@ -66,14 +66,14 @@ class DockerWorker(Worker):
             raise DockerWorkerError('Missing input %s' % ke)
         except error.APIerror, ae:
             self.app_logger.warn(
-                'Unable to stop %s. Error: %s' % ( params.get('container_name', ae)))
+                'Unable to stop %s. Error: %s' % (params.get('container_name', ae)))
             raise DockerWorkerError(
                 'No such container is running currently.' )
         except requests.exceptions.ConnectionError, ce:
             self.app_logger.warn(
-                'Unable to connect to %s. Error: %s' % ( params.get('server_name', ce)))
+                'Unable to connect to %s. Error: %s' % (params.get('server_name', ce)))
             raise DockerWorkerError(
-                'Could not connect to the requested Docker Host' )
+                'Could not connect to the requested Docker Host')
 
     def remove_container(self, body, corr_id, output):
         """
@@ -91,7 +91,7 @@ class DockerWorker(Worker):
         try:
             server_name = params['server_name']
             container_name = params['container_name']
-            client = docker.Client(base_url = server_name,version = self._config['version'])
+            client = docker.Client(base_url=server_name, version=self._config['version'])
             client.remove(container_name)
 
         except KeyError, ke:
@@ -126,7 +126,7 @@ class DockerWorker(Worker):
         try:
             server_name = params['server_name']
             image_name = params['image_name']
-            client = docker.Client(base_url = server_name,version = self._config['version'])
+            client = docker.Client(base_url=server_name, version=self._config['version'])
             client.remove(image_name)
 
         except KeyError, ke:
@@ -162,7 +162,7 @@ class DockerWorker(Worker):
             server_name = params['server_name']
             image_name = params['image_name']
             insecure_registry = params['secure']
-            client = docker.Client(base_url = server_name,version = self._config['version'])
+            client = docker.Client(base_url=server_name,version=self._config['version'])
             client.pull(image_name, insecure_registry = secure)
 
         except KeyError, ke:
@@ -175,8 +175,7 @@ class DockerWorker(Worker):
             self.app_logger.warn(
                 'Unable to connect to %s. Error: %s' % ( params.get ('server_name', ce)))
             raise DockerWorkerError(
-                'Could not connect to the requested Docker Host' )
-
+                'Could not connect to the requested Docker Host')
 
     def create_container(self, body, corr_id, output):
         """
@@ -198,8 +197,8 @@ class DockerWorker(Worker):
             container_command = params['container_command']
             container_hostname = params['container_hostname']
             container_port = params['container_port']
-            client = docker.Client(base_url = server_name,version = self._config['version'])
-            client.create_container(image_name, name = container_name, command = container_command, hostname = container_hostname, ports = [container_port])
+            client = docker.Client(base_url=server_name, version=self._config['version'])
+            client.create_container(image_name, name=container_name, command=container_command, hostname=container_hostname, ports=[container_port])
 
         except KeyError, ke:
             output.error(
@@ -208,14 +207,14 @@ class DockerWorker(Worker):
             raise DockerWorkerError('Missing input %s' % ke)
         except error.APIerror, ae:
             self.app_logger.warn(
-                'Unable to remove %s. Error: %s' % ( params.get ('image_name', ae)))
+                'Unable to remove %s. Error: %s' % (params.get ('image_name', ae)))
             raise DockerWorkerError(
-                'No such image exists on the server.' )
+                'No such image exists on the server.')
         except requests.exceptions.ConnectionError, ce:
             self.app_logger.warn(
-                'Unable to connect to %s. Error: %s' % ( params.get ('server_name', ce)))
+                'Unable to connect to %s. Error: %s' % (params.get ('server_name', ce)))
             raise DockerWorkerError(
-                'Could not connect to the requested Docker Host' )
+                'Could not connect to the requested Docker Host')
 
     def start_container(self, body, corr_id, output):
         """
@@ -235,8 +234,8 @@ class DockerWorker(Worker):
             container_name = params['container_name']
             container_binds = params['container_binds']
             port_bindings = params['port_bindings']
-            client = docker.Client(base_url=server_name,version=self._config['version'])
-            client.start_container(container=container_name, container_binds = container_binds, port_bindings = [port_bindings])
+            client = docker.Client(base_url=server_name, version=self._config['version'])
+            client.start_container(container=container_name, container_binds=container_binds, port_bindings=[port_bindings])
 
         except KeyError, ke:
             output.error(
@@ -245,14 +244,14 @@ class DockerWorker(Worker):
             raise DockerWorkerError('Missing input %s' % ke)
         except requests.exceptions.ConnectionError, ce:
             self.app_logger.warn(
-                'Unable to connect to %s. Error: %s' % ( params.get ('server_name', ce)))
+                'Unable to connect to %s. Error: %s' % (params.get ('server_name', ce)))
             raise DockerWorkerError(
-                'Could not connect to the requested Docker Host' )
+                'Could not connect to the requested Docker Host')
         except error.APIerror, ae:
             self.app_logger.warn(
                 'Unable to start %s. Error: %s' % ( params.get ('container_name', ae)))
             raise DockerWorkerError(
-                'No such container exists' )
+                'No such container exists')
 
     def process(self, channel, basic_deliver, properties, body, output):
         """
