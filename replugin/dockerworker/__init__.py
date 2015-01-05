@@ -18,7 +18,7 @@ Docker worker.
 """
 
 from reworker.worker import Worker
-import docker import Client
+from docker import Client
 
 
 class DockerWorkerError(Exception):
