@@ -170,7 +170,7 @@ class DockerWorker(Worker):
                 'Unable to pull image %s because of missing input %s' % (
                     params.get('image_name', 'IMAGE_NOT_GIVEN'), ke))
             raise DockerWorkerError('Missing input %s' % ke)
-##### Need to figure out how to raise fail on not find
+        # Need to figure out how to raise fail on not find
         except requests.exceptions.ConnectionError, ce:
             self.app_logger.warn(
                 'Unable to connect to %s. Error: %s' % (params.get('server_name', ce)))
