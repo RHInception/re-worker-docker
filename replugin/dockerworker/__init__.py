@@ -38,6 +38,7 @@ class DockerWorker(Worker):
     #: allowed subcommands
     subcommands = (
         'StopContainer',
+        'RemoveContainer',
     )
     dynamic = []
 
@@ -80,6 +81,44 @@ class DockerWorker(Worker):
             raise DockerWorkerError(
                 'Could not connect to the requested Docker Host')
 
+    def remove_container(self, body, corr_id, output):
+        """
+        Remove a single container.
+
+        Parameters:
+
+        * body: The message body structure
+        * corr_id: The correlation id of the message
+        * output: The output object back to the user
+        """
+        # Get needed variables
+        params = body.get('parameters', {})
+
+        try:
+            server_name = params['server_name']
+            container_name = params['container_name']
+            client = docker.Client(base_url=server_name, version=self._config['version'])
+            client.remove_container(container_name)
+
+        except KeyError, ke:
+            print ke
+            output.error(
+                'Unable to remove container %s because of missing input %s' % (
+                    params.get('container_name', 'IMAGE_NOT_GIVEN'), ke))
+            raise DockerWorkerError('Missing input %s' % ke)
+        except docker.errors.APIError, ae:
+            self.app_logger.warn(
+                'Unable to remove %s. Error: %s' % (
+                    params.get('container_name', 'Unknown'), ae))
+            raise DockerWorkerError(
+                'No such container found.')
+        except requests.exceptions.ConnectionError, ce:
+            self.app_logger.warn(
+                'Unable to connect to %s. Error: %s' % (
+                    params.get('server_name', 'Unknown'), ce))
+            raise DockerWorkerError(
+                'Could not connect to the requested Docker Host')
+
     def process(self, channel, basic_deliver, properties, body, output):
         """
         Processes DockerWorker requests from the bus.
@@ -107,6 +146,8 @@ class DockerWorker(Worker):
             subcommand
             if subcommand == 'StopContainer':
                 cmd_method = self.stop_container
+            elif subcommand == 'RemoveContainer':
+                cmd_method = self.remove_container
             else:
                 self.app_logger.warn(
                     'Could not find the implementation of subcommand %s' % (
