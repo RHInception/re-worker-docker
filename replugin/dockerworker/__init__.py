@@ -40,6 +40,8 @@ class DockerWorker(Worker):
         'StopContainer',
         'RemoveContainer',
         'RemoveImage',
+        'PullImage',
+        'CreateContainer',
     )
     dynamic = []
 
@@ -150,7 +152,97 @@ class DockerWorker(Worker):
                 'Unable to remove %s. Error: %s' % (
                     params.get('image_name', 'Unknown'), ae))
             raise DockerWorkerError(
-                'No such container found.')
+                'No such image found.')
+        except requests.exceptions.ConnectionError, ce:
+            self.app_logger.warn(
+                'Unable to connect to %s. Error: %s' % (
+                    params.get('server_name', 'Unknown'), ce))
+            raise DockerWorkerError(
+                'Could not connect to the requested Docker Host')
+
+#    def pull_image(self, body, corr_id, output):
+#        """
+#        Pull a single Image.
+#
+#        Parameters:
+#
+#        * body: The message body structure
+#        * corr_id: The correlation id of the message
+#        * output: The output object back to the user
+#        """
+#        # Get needed variables
+#        params = body.get('parameters', {})
+#
+#        try:
+#            server_name = params['server_name']
+#            image_name = params['image_name']
+#            registry = params['insecure_registry']
+#            print "first"
+#            client = docker.Client(base_url=server_name, version=self._config['version'])
+#            print "middle"
+#            client.pull(image_name, insecure_registry=registry)
+#            print "end"
+#
+#        except KeyError, ke:
+#            print ke
+#            output.error(
+#                'Unable to pull image %s because of missing input %s' % (
+#                    params.get('image_name', 'IMAGE_NOT_GIVEN'), ke))
+#            raise DockerWorkerError('Missing input %s' % ke)
+#        except docker.errors.APIError, ae:
+#            self.app_logger.warn(
+#                'Unable to pull %s. Error: %s' % (
+#                    params.get('image_name', 'Unknown'), ae))
+#            raise DockerWorkerError(
+#                'No such image found.')
+#        except requests.exceptions.ConnectionError, ce:
+#            self.app_logger.warn(
+#                'Unable to connect to %s. Error: %s' % (
+#                    params.get('server_name', 'Unknown'), ce))
+#            raise DockerWorkerError(
+#                'Could not connect to the requested Docker Host')
+#        except errors.DockerException, de:
+#            self.app_logger.warn(
+#                'HTTPS endpoint unresponsive and insecure mode not enabledon %s. Error: %s' % (
+#                    params.get('server_name', 'Unknown'), de))
+#            raise DockerWorkerError(
+#                'Pull error due to registry check secure/insecure.')
+
+    def create_container(self, body, corr_id, output):
+        """
+        Create a single container.
+
+        Parameters:
+
+        * body: The message body structure
+        * corr_id: The correlation id of the message
+        * output: The output object back to the user
+        """
+        # Get needed variables
+        params = body.get('parameters', {})
+
+        try:
+            server_name = params['server_name']
+            image_name = params['image_name']
+            container_name = params['container_name']
+            container_command = params['container_command']
+            container_hostname = params['container_hostname']
+            container_ports = params['container_ports']
+            client = docker.Client(base_url=server_name, version=self._config['version'])
+            client.create_container(image_name, name=container_name, command=container_command, hostname=container_hostname, ports=[container_ports])
+
+        except KeyError, ke:
+            print ke
+            output.error(
+                'Unable to create container %s because of missing input %s' % (
+                    params.get('container_name', 'IMAGE_NOT_GIVEN'), ke))
+            raise DockerWorkerError('Missing input %s' % ke)
+        except docker.errors.APIError, ae:
+            self.app_logger.warn(
+                'Unable to create %s. Error: %s' % (
+                    params.get('container_name', 'Unknown'), ae))
+            raise DockerWorkerError(
+                'No such image found.')
         except requests.exceptions.ConnectionError, ce:
             self.app_logger.warn(
                 'Unable to connect to %s. Error: %s' % (
@@ -189,6 +281,10 @@ class DockerWorker(Worker):
                 cmd_method = self.remove_container
             elif subcommand == 'RemoveImage':
                 cmd_method = self.remove_image
+            elif subcommand == 'PullImage':
+                cmd_method = self.pull_image
+            elif subcommand == 'CreateContainer':
+                cmd_method = self.create_container
             else:
                 self.app_logger.warn(
                     'Could not find the implementation of subcommand %s' % (

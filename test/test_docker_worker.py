@@ -674,3 +674,397 @@ class TestDockerWorker(TestCase):
             self.assertEquals(self.app_logger.warn.call_count, 1)
             self.assertEquals(self.app_logger.error.call_count, 1)
             self.assertEquals(worker.send.call_args[0][2]['status'], 'failed')
+
+#    def test_docker_pull_image(self):
+#        """
+#        Verify docker:PullImage works like it should.
+#        """
+#        with nested(
+#                mock.patch('pika.SelectConnection'),
+#                mock.patch('replugin.dockerworker.DockerWorker.notify'),
+#                mock.patch('replugin.dockerworker.DockerWorker.send'),
+#                mock.patch('docker.Client')) as (_, _, _, _client):
+#
+#            worker = dockerworker.DockerWorker(
+#                MQ_CONF,
+#                logger=self.app_logger,
+#                config_file='conf/example.json')
+#
+#            worker._on_open(self.connection)
+#            worker._on_channel_open(self.channel)
+#
+#            body = {
+#                "parameters": {
+#                    "command": "docker",
+#                    "subcommand": "PullImage",
+#                    "server_name": "localhost",
+#                    "image_name": "testing",
+#                    "insecure_registry": True,
+#                },
+#            }
+#
+#            # Execute the call
+#            worker.process(
+#                self.channel,
+#                self.basic_deliver,
+#                self.properties,
+#                body,
+#                self.logger)
+#
+#            # The worker should not have any error logs and should respond
+#            # with a completed
+#            self.assertEquals(self.app_logger.error.call_count, 0)
+#            self.assertEquals(worker.send.call_args[0][2]['status'], 'completed')
+#
+#            # The docker client should connect to the server given and use the
+#            # proper version number as defined in the configuration file
+#            _client.assert_called_once_with(
+#                base_url="localhost", version=worker._config['version'])
+#            # The docker client should call pull to grab the new image
+#            print _client().call_count
+#            _client().pull_image.assert_called_once_with("testing", insecure_registry=True)
+#
+#    def test_docker_pull_image_missing_input(self):
+#        """
+#        Verify docker:PullImage fails if not given the proper information.
+#        """
+#        with nested(
+#                mock.patch('pika.SelectConnection'),
+#                mock.patch('replugin.dockerworker.DockerWorker.notify'),
+#                mock.patch('replugin.dockerworker.DockerWorker.send'),
+#                mock.patch('docker.Client')) as (_, _, _, _client):
+#
+#            worker = dockerworker.DockerWorker(
+#                MQ_CONF,
+#                logger=self.app_logger,
+#                config_file='conf/example.json')
+#
+#            worker._on_open(self.connection)
+#            worker._on_channel_open(self.channel)
+#
+#            # Missing container_name
+#            body = {
+#                "parameters": {
+#                    "command": "docker",
+#                    "subcommand": "PullImage",
+#                    "server_name": "localhost",
+#                    "insecure_registry": True,
+#                },
+#            }
+#
+#            # Execute the call
+#            worker.process(
+#                self.channel,
+#                self.basic_deliver,
+#                self.properties,
+#                body,
+#                self.logger)
+#
+#            self.assertEquals(self.app_logger.error.call_count, 1)
+#            self.assertEquals(worker.send.call_args[0][2]['status'], 'failed')
+#            self.assertEquals(_client.call_count, 0)
+#            self.assertEquals(_client().stop.call_count, 0)
+#
+#            # Reset some mocks ...
+#            self.app_logger.reset_mock()
+#            _client.reset_mock()
+#
+#            # Missing server_name
+#            body = {
+#                "parameters": {
+#                    "command": "docker",
+#                    "subcommand": "PullImage",
+#                    "container_name": "testing",
+#                    "insecure_registry": True,
+#                },
+#            }
+#
+#            # Execute the call
+#            worker.process(
+#                self.channel,
+#                self.basic_deliver,
+#                self.properties,
+#                body,
+#                self.logger)
+#
+#            # The worker should not have any error logs and should respond
+##            # with a completed
+#            self.assertEquals(self.app_logger.error.call_count, 1)
+#            self.assertEquals(worker.send.call_args[0][2]['status'], 'failed')
+#            self.assertEquals(_client.call_count, 0)
+#            self.assertEquals(_client().stop.call_count, 0)
+#
+#
+#    def test_docker_pull_image_exception_failures(self):
+#        """
+#        Verify docker:PullImage handles exceptions properly.
+#        """
+#        with nested(
+#                mock.patch('pika.SelectConnection'),
+#                mock.patch('replugin.dockerworker.DockerWorker.notify'),
+#                mock.patch('replugin.dockerworker.DockerWorker.send'),
+#                mock.patch('docker.Client')) as (_, _, _, _client):
+#
+#            # APIError
+#            _client.side_effect = docker.errors.APIError("TEST", mock.MagicMock(content='asd'))
+#            worker = dockerworker.DockerWorker(
+#                MQ_CONF,
+#                logger=self.app_logger,
+#                config_file='conf/example.json')
+#
+#            worker._on_open(self.connection)
+#            worker._on_channel_open(self.channel)
+#
+#            body = {
+#                "parameters": {
+#                   "command": "docker",
+#                    "subcommand": "PullImage",
+#                    "server_name": "localhost",
+#                    "image_name": "testing",
+#                    "insecure_registry": True,
+#                },
+#            }
+#
+#            # Execute the call
+#            worker.process(
+#                self.channel,
+#                self.basic_deliver,
+#                self.properties,
+#                body,
+#                self.logger)
+#
+#            self.assertEquals(self.app_logger.warn.call_count, 1)
+#            self.assertEquals(self.app_logger.error.call_count, 1)
+#            self.assertEquals(worker.send.call_args[0][2]['status'], 'failed')
+#
+#            # Reset some mocks ...
+#            self.app_logger.reset_mock()
+#            _client.reset_mock()
+#
+#            # ConnectionError
+#            _client.side_effect = requests.exceptions.ConnectionError()
+#            body = {
+#                "parameters": {
+#                    "command": "docker",
+#                    "subcommand": "PullImage",
+#                    "server_name": "localhost",
+#                    "image_name": "testing",
+#                    "insecure_registry": True,
+#                },
+#            }
+#
+#            # Execute the call
+#            worker.process(
+#                self.channel,
+#                self.basic_deliver,
+#                self.properties,
+#                body,
+#                self.logger)
+#
+#            # The worker should not have any error logs and should respond
+#            # with a completed
+#            self.assertEquals(self.app_logger.warn.call_count, 1)
+#            self.assertEquals(self.app_logger.error.call_count, 1)
+#            self.assertEquals(worker.send.call_args[0][2]['status'], 'failed')
+
+    def test_docker_create_container(self):
+        """
+        Verify docker:CreateContainer works like it should.
+        """
+        with nested(
+                mock.patch('pika.SelectConnection'),
+                mock.patch('replugin.dockerworker.DockerWorker.notify'),
+                mock.patch('replugin.dockerworker.DockerWorker.send'),
+                mock.patch('docker.Client')) as (_, _, _, _client):
+
+            worker = dockerworker.DockerWorker(
+                MQ_CONF,
+                logger=self.app_logger,
+                config_file='conf/example.json')
+
+            worker._on_open(self.connection)
+            worker._on_channel_open(self.channel)
+
+            body = {
+                "parameters": {
+                    "command": "docker",
+                    "subcommand": "CreateContainer",
+                    "server_name": "localhost",
+                    "image_name": "testing",
+                    "container_command": "/bin/bash",
+                    "container_hostname": "test.local",
+                    "container_name": "testing-container",
+                    "container_ports": "443",
+                },
+            }
+
+            # Execute the call
+            worker.process(
+                self.channel,
+                self.basic_deliver,
+                self.properties,
+                body,
+                self.logger)
+
+            # The worker should not have any error logs and should respond
+            # with a completed
+            self.assertEquals(self.app_logger.error.call_count, 0)
+            self.assertEquals(worker.send.call_args[0][2]['status'], 'completed')
+
+            # The docker client should connect to the server given and use the
+            # proper version number as defined in the configuration file
+            _client.assert_called_once_with(
+                base_url="localhost", version=worker._config['version'])
+            # The docker client should call for a container to be created
+            _client().create_container.assert_called_once_with('testing', name='testing-container', command='/bin/bash', hostname='test.local', ports=['443'])
+
+    def test_docker_create_container_missing_input(self):
+        """
+        Verify docker:CreateContainer fails if not given the proper information.
+        """
+        with nested(
+                mock.patch('pika.SelectConnection'),
+                mock.patch('replugin.dockerworker.DockerWorker.notify'),
+                mock.patch('replugin.dockerworker.DockerWorker.send'),
+                mock.patch('docker.Client')) as (_, _, _, _client):
+
+            worker = dockerworker.DockerWorker(
+                MQ_CONF,
+                logger=self.app_logger,
+                config_file='conf/example.json')
+
+            worker._on_open(self.connection)
+            worker._on_channel_open(self.channel)
+
+            # Missing container_name
+            body = {
+                "parameters": {
+                    "command": "docker",
+                    "subcommand": "CreateContainer",
+                    "server_name": "localhost",
+                    "container_command": "/bin/bash",
+                    "container_name": "testing",
+                },
+            }
+
+            # Execute the call
+            worker.process(
+                self.channel,
+                self.basic_deliver,
+                self.properties,
+                body,
+                self.logger)
+
+            self.assertEquals(self.app_logger.error.call_count, 1)
+            self.assertEquals(worker.send.call_args[0][2]['status'], 'failed')
+            self.assertEquals(_client.call_count, 0)
+            self.assertEquals(_client().stop.call_count, 0)
+
+            # Reset some mocks ...
+            self.app_logger.reset_mock()
+            _client.reset_mock()
+
+            # Missing server_name
+            body = {
+                "parameters": {
+                    "command": "docker",
+                    "subcommand": "CreateContainer",
+                    "image_name": "testing",
+                    "container_command": "/bin/bash",
+                    "container_name": "testing",
+                },
+            }
+
+            # Execute the call
+            worker.process(
+                self.channel,
+                self.basic_deliver,
+                self.properties,
+                body,
+                self.logger)
+
+            # The worker should not have any error logs and should respond
+            # with a completed
+            self.assertEquals(self.app_logger.error.call_count, 1)
+            self.assertEquals(worker.send.call_args[0][2]['status'], 'failed')
+            self.assertEquals(_client.call_count, 0)
+            self.assertEquals(_client().stop.call_count, 0)
+
+
+    def test_docker_create_container_exception_failures(self):
+        """
+        Verify docker:CreateContainer handles exceptions properly.
+        """
+        with nested(
+                mock.patch('pika.SelectConnection'),
+                mock.patch('replugin.dockerworker.DockerWorker.notify'),
+                mock.patch('replugin.dockerworker.DockerWorker.send'),
+                mock.patch('docker.Client')) as (_, _, _, _client):
+
+            # APIError
+            _client.side_effect = docker.errors.APIError("TEST", mock.MagicMock(content='asd'))
+            worker = dockerworker.DockerWorker(
+                MQ_CONF,
+                logger=self.app_logger,
+                config_file='conf/example.json')
+
+            worker._on_open(self.connection)
+            worker._on_channel_open(self.channel)
+
+            body = {
+                "parameters": {
+                    "command": "docker",
+                    "subcommand": "CreateContainer",
+                    "server_name": "localhost",
+                    "image_name": "testing",
+                    "container_command": "/bin/bash",
+                    "container_hostname": "test.local",
+                    "container_name": "testing-container",
+                    "container_ports": "443",
+                },
+            }
+
+            # Execute the call
+            worker.process(
+                self.channel,
+                self.basic_deliver,
+                self.properties,
+                body,
+                self.logger)
+
+            self.assertEquals(self.app_logger.warn.call_count, 1)
+            self.assertEquals(self.app_logger.error.call_count, 1)
+            self.assertEquals(worker.send.call_args[0][2]['status'], 'failed')
+
+            # Reset some mocks ...
+            self.app_logger.reset_mock()
+            _client.reset_mock()
+
+            # ConnectionError
+            _client.side_effect = requests.exceptions.ConnectionError()
+            body = {
+                "parameters": {
+                    "command": "docker",
+                    "subcommand": "CreateContainer",
+                    "server_name": "localhost",
+                    "image_name": "testing",
+                    "container_command": "/bin/bash",
+                    "container_hostname": "test.local",
+                    "container_name": "testing-container",
+                    "container_ports": "443",
+                },
+            }
+
+            # Execute the call
+            worker.process(
+                self.channel,
+                self.basic_deliver,
+                self.properties,
+                body,
+                self.logger)
+
+            # The worker should not have any error logs and should respond
+            # with a completed
+            self.assertEquals(self.app_logger.warn.call_count, 1)
+            self.assertEquals(self.app_logger.error.call_count, 1)
+            self.assertEquals(worker.send.call_args[0][2]['status'], 'failed')
