@@ -61,6 +61,12 @@ ci-pep8:
 	@echo "#############################################"
 	. $(NAME)env/bin/activate && pep8 --ignore=E501,E121,E124 $(SHORTNAME)/
 
+ci-pyflakes:
+	@echo "#############################################"
+	@echo "# Running PyFlakes Tests in virtualenv"
+	@echo "#############################################"
+	. $(NAME)env/bin/activate && pyflakes $(SHORTNAME)
+
 ci: clean virtualenv ci-list-deps ci-pep8 ci-unittests
 	:
 
@@ -78,7 +84,7 @@ unittests:
 clean:
 	@find . -type f -regex ".*\.py[co]$$" -delete
 	@find . -type f \( -name "*~" -or -name "#*" \) -delete
-	@rm -fR build dist rpm-build MANIFEST htmlcov .coverage $(SHORTNAME).egg-info
+	@rm -fR build dist rpm-build MANIFEST htmlcov .coverage reworkerdocker.egg-info
 	@rm -rf $(NAME)env
 
 pep8:
@@ -92,7 +98,7 @@ pyflakes:
 	@echo "# Running Pyflakes Sanity Tests"
 	@echo "# Note: most import errors may be ignored"
 	@echo "#############################################"
-	-pyflakes src/$(SHORTNAME)
+	-pyflakes $(SHORTNAME)
 
 rpmcommon: sdist
 	@mkdir -p rpm-build
@@ -107,7 +113,7 @@ srpm: rpmcommon
 	--define "_sourcedir %{_topdir}" \
 	-bs $(RPMSPEC)
 	@echo "#############################################"
-	@echo "Re-Core SRPM is built:"
+	@echo "$(NAME) SRPM is built:"
 	@find rpm-build -maxdepth 2 -name 're-worker-docker*src.rpm' | awk '{print "    " $$1}'
 	@echo "#############################################"
 
@@ -120,6 +126,6 @@ rpm: rpmcommon
 	--define "_sourcedir %{_topdir}" \
 	-ba $(RPMSPEC)
 	@echo "#############################################"
-	@echo "Re-Core RPMs are built:"
+	@echo "$(NAME) RPMs are built:"
 	@find rpm-build -maxdepth 2 -name 're-worker-docker*.rpm' | awk '{print "    " $$1}'
 	@echo "#############################################"

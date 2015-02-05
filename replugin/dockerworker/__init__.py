@@ -46,6 +46,61 @@ class DockerWorker(Worker):
     )
     dynamic = []
 
+
+    # Duplication
+    #
+    # This line (and friends) is duplicated in several places:
+    #
+    # > client = docker.Client(base_url=server_name, version=self._config['version'])
+    #
+    # I would have centralized creating the client into a separate
+    # private method.
+    #
+    # def _create_client(self, params):
+    #     server_name = ......; container_name = ......;
+    #     try:
+    #         client = docker.Client(..,..,..)
+    #         return client
+    #     except requests.exceptions.ConnectionError, ce:
+    #         do_the_needful
+    #
+    #
+    # And then down in process()...
+    #
+    # client = self._create_client(params)
+    # result = cmd_method(client, body, corr_id, output)
+    #
+    # This could also remove the need for a lot of the duplicated
+    # 'except requests.exceptions.ConnectionError' statements in each
+    # subcommand. That is assuming that creating the Client object is
+    # enough to trigger that exception. It's possible that requests
+    # isn't used until an actual client command is tried.
+    #
+    # ----------------------------------------------------------------------
+    #
+    # Similar to above, looks like you're duplicating this as well:
+    #
+    # > params = body.get('parameters', {})
+    #
+    # Could simplify things a bit and just pass that in when calling
+    # the subcommand
+    #
+    # client = self._create_client(params)
+    # params = body.get('parameters', {})
+    # result = cmd_method(client, params, corr_id, output)
+
+
+    ##################################################################
+
+    # What's up with corr_id? It's a method argument for each
+    # subcommand, but isn't used in any subcommand method. Looks like
+    # it doesn't need to be passed in at all.
+
+    ##################################################################
+
+
+
+
     # Subcommand methods
     def stop_container(self, body, corr_id, output):
         """
@@ -199,6 +254,16 @@ class DockerWorker(Worker):
                     params.get('server_name', 'Unknown'), ce))
             raise DockerWorkerError(
                 'Could not connect to the requested Docker Host')
+
+        # I ran 'pyflakes' on the module and received this error:
+        #
+        # > replugin/dockerworker/__init__.py:202: undefined name 'errors'
+        #
+        # This happens to be the 5 lines of code missing test coverage
+        # :-)
+        #
+        # basically, "errors.DockerException" isn't a real thing. You
+        # probably wanted docker.errors.DockerException instead.
         except errors.DockerException, de:
             self.app_logger.warn(
                 'HTTPS endpoint unresponsive and insecure mode not enabledon %s. Error: %s' % (
