@@ -46,7 +46,6 @@ class DockerWorker(Worker):
     )
     dynamic = []
 
-
     # Duplication
     #
     # This line (and friends) is duplicated in several places:
@@ -88,18 +87,12 @@ class DockerWorker(Worker):
     # client = self._create_client(params)
     # params = body.get('parameters', {})
     # result = cmd_method(client, params, corr_id, output)
-
-
-    ##################################################################
-
+    #################################################################
     # What's up with corr_id? It's a method argument for each
     # subcommand, but isn't used in any subcommand method. Looks like
     # it doesn't need to be passed in at all.
 
     ##################################################################
-
-
-
 
     # Subcommand methods
     def stop_container(self, body, corr_id, output):
@@ -255,16 +248,7 @@ class DockerWorker(Worker):
             raise DockerWorkerError(
                 'Could not connect to the requested Docker Host')
 
-        # I ran 'pyflakes' on the module and received this error:
-        #
-        # > replugin/dockerworker/__init__.py:202: undefined name 'errors'
-        #
-        # This happens to be the 5 lines of code missing test coverage
-        # :-)
-        #
-        # basically, "errors.DockerException" isn't a real thing. You
-        # probably wanted docker.errors.DockerException instead.
-        except errors.DockerException, de:
+        except docker.errors.DockerException, de:
             self.app_logger.warn(
                 'HTTPS endpoint unresponsive and insecure mode not enabledon %s. Error: %s' % (
                     params.get('server_name', 'Unknown'), de))
