@@ -42,8 +42,8 @@ calls.
 
 
 %changelog
-* Mon Jan  5 2014 Ryan Cook <rcook@redhat.com> - 0.0.1-2
+* Tue Jan  5 2014 Ryan Cook <rcook@redhat.com> - 0.0.1-2
 - Initial spec
 
-* Mon Jan  5 2014 Steve Milner <stevem@gnulinux.net> - 0.0.1-1
+* Tue Jan  5 2014 Steve Milner <stevem@gnulinux.net> - 0.0.1-1
 - Initial spec
