@@ -42,6 +42,7 @@ class DockerWorker(Worker):
         'RemoveImage',
         'PullImage',
         'CreateContainer',
+        'StartContainer',
     )
     dynamic = []
 
@@ -250,6 +251,45 @@ class DockerWorker(Worker):
             raise DockerWorkerError(
                 'Could not connect to the requested Docker Host')
 
+    def start_container(self, body, corr_id, output):
+        """
+        Start a single container.
+
+        Parameters:
+
+        * body: The message body structure
+        * corr_id: The correlation id of the message
+        * output: The output object back to the user
+        """
+        # Get needed variables
+        params = body.get('parameters', {})
+
+        try:
+            server_name = params['server_name']
+            container_name = params['container_name']
+            container_binds = params['container_binds']
+            port_bindings = params['port_bindings']
+            client = docker.Client(base_url=server_name, version=self._config['version'])
+            client.start_container(container_name, binds=container_binds, port_bindings=port_bindings)
+        except KeyError, ke:
+            print ke
+            output.error(
+                'Unable to start container %s because of missing input %s' % (
+                    params.get('container_name', 'IMAGE_NOT_GIVEN'), ke))
+            raise DockerWorkerError('Missing input %s' % ke)
+        except docker.errors.APIError, ae:
+            self.app_logger.warn(
+                'Unable to start %s. Error: %s' % (
+                    params.get('container_name', 'Unknown'), ae))
+            raise DockerWorkerError(
+                'No such container found.')
+        except requests.exceptions.ConnectionError, ce:
+            self.app_logger.warn(
+                'Unable to connect to %s. Error: %s' % (
+                    params.get('server_name', 'Unknown'), ce))
+            raise DockerWorkerError(
+                'Could not connect to the requested Docker Host')
+
     def process(self, channel, basic_deliver, properties, body, output):
         """
         Processes DockerWorker requests from the bus.
@@ -285,6 +325,8 @@ class DockerWorker(Worker):
                 cmd_method = self.pull_image
             elif subcommand == 'CreateContainer':
                 cmd_method = self.create_container
+            elif subcommand == 'StartContainer':
+                cmd_method = self.start_container
             else:
                 self.app_logger.warn(
                     'Could not find the implementation of subcommand %s' % (
