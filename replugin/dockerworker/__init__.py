@@ -161,53 +161,50 @@ class DockerWorker(Worker):
             raise DockerWorkerError(
                 'Could not connect to the requested Docker Host')
 
-#    def pull_image(self, body, corr_id, output):
-#        """
-#        Pull a single Image.
-#
-#        Parameters:
-#
-#        * body: The message body structure
-#        * corr_id: The correlation id of the message
-#        * output: The output object back to the user
-#        """
-#        # Get needed variables
-#        params = body.get('parameters', {})
-#
-#        try:
-#            server_name = params['server_name']
-#            image_name = params['image_name']
-#            registry = params['insecure_registry']
-#            print "first"
-#            client = docker.Client(base_url=server_name, version=self._config['version'])
-#            print "middle"
-#            client.pull(image_name, insecure_registry=registry)
-#            print "end"
-#
-#        except KeyError, ke:
-#            print ke
-#            output.error(
-#                'Unable to pull image %s because of missing input %s' % (
-#                    params.get('image_name', 'IMAGE_NOT_GIVEN'), ke))
-#            raise DockerWorkerError('Missing input %s' % ke)
-#        except docker.errors.APIError, ae:
-#            self.app_logger.warn(
-#                'Unable to pull %s. Error: %s' % (
-#                    params.get('image_name', 'Unknown'), ae))
-#            raise DockerWorkerError(
-#                'No such image found.')
-#        except requests.exceptions.ConnectionError, ce:
-#            self.app_logger.warn(
-#                'Unable to connect to %s. Error: %s' % (
-#                    params.get('server_name', 'Unknown'), ce))
-#            raise DockerWorkerError(
-#                'Could not connect to the requested Docker Host')
-#        except errors.DockerException, de:
-#            self.app_logger.warn(
-#                'HTTPS endpoint unresponsive and insecure mode not enabledon %s. Error: %s' % (
-#                    params.get('server_name', 'Unknown'), de))
-#            raise DockerWorkerError(
-#                'Pull error due to registry check secure/insecure.')
+    def pull_image(self, body, corr_id, output):
+        """
+        Pull a single Image.
+
+        Parameters:
+
+        * body: The message body structure
+        * corr_id: The correlation id of the message
+        * output: The output object back to the user
+        """
+        # Get needed variables
+        params = body.get('parameters', {})
+
+        try:
+            server_name = params['server_name']
+            image_name = params['image_name']
+            registry = params['insecure_registry']
+            client = docker.Client(base_url=server_name, version=self._config['version'])
+            client.pull(image_name, insecure_registry=registry)
+
+        except KeyError, ke:
+            print ke
+            output.error(
+                'Unable to pull image %s because of missing input %s' % (
+                    params.get('image_name', 'IMAGE_NOT_GIVEN'), ke))
+            raise DockerWorkerError('Missing input %s' % ke)
+        except docker.errors.APIError, ae:
+            self.app_logger.warn(
+                'Unable to pull %s. Error: %s' % (
+                    params.get('image_name', 'Unknown'), ae))
+            raise DockerWorkerError(
+                'No such image found.')
+        except requests.exceptions.ConnectionError, ce:
+            self.app_logger.warn(
+                'Unable to connect to %s. Error: %s' % (
+                    params.get('server_name', 'Unknown'), ce))
+            raise DockerWorkerError(
+                'Could not connect to the requested Docker Host')
+        except errors.DockerException, de:
+            self.app_logger.warn(
+                'HTTPS endpoint unresponsive and insecure mode not enabledon %s. Error: %s' % (
+                    params.get('server_name', 'Unknown'), de))
+            raise DockerWorkerError(
+                'Pull error due to registry check secure/insecure.')
 
     def create_container(self, body, corr_id, output):
         """
