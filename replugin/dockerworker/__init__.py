@@ -273,8 +273,8 @@ class DockerWorker(Worker):
             image_name = params['image_name']
             container_name = params['container_name']
             container_command = params['container_command']
-            container_hostname = params['container_hostname']
-            container_ports = params['container_ports']
+            container_hostname = params.get('container_hostname', {})
+            container_ports = params.get('container_ports', {})
             client = docker.Client(base_url=server_name, version=self._config['version'])
             client.create_container(image_name, name=container_name, command=container_command, hostname=container_hostname, ports=[container_ports])
 
@@ -313,8 +313,8 @@ class DockerWorker(Worker):
         try:
             server_name = params['server_name']
             container_name = params['container_name']
-            container_binds = params['container_binds']
-            port_bindings = params['port_bindings']
+            container_binds = params.get('container_binds', {})
+            port_bindings = params.get('port_bindings', {})
             client = docker.Client(base_url=server_name, version=self._config['version'])
             client.start(container_name, binds=container_binds, port_bindings=port_bindings)
         except KeyError, ke:
