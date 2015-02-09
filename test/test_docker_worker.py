@@ -1115,7 +1115,7 @@ class TestDockerWorker(TestCase):
             _client.assert_called_once_with(
                 base_url="localhost", version=worker._config['version'])
             # The docker client should call for a container to be created
-            _client().start_container.assert_called_once_with("testing", binds={'/test':'/test'}, port_bindings={443: ('0.0.0.0', 443)})
+            _client().start.assert_called_once_with("testing", binds={'/test':'/test'}, port_bindings={443: ('0.0.0.0', 443)})
 
     def test_docker_start_container_missing_input(self):
         """

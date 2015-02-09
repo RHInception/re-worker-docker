@@ -316,7 +316,7 @@ class DockerWorker(Worker):
             container_binds = params['container_binds']
             port_bindings = params['port_bindings']
             client = docker.Client(base_url=server_name, version=self._config['version'])
-            client.start_container(container_name, binds=container_binds, port_bindings=port_bindings)
+            client.start(container_name, binds=container_binds, port_bindings=port_bindings)
         except KeyError, ke:
             print ke
             output.error(

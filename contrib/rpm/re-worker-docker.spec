@@ -10,7 +10,7 @@
 Name: re-worker-docker
 Summary: Basic Docker worker for Release Engine
 Version: 0.0.2
-Release: 1%{?dist}
+Release: 2%{?dist}
 
 Group: Applications/System
 License: AGPLv3
@@ -42,6 +42,9 @@ calls.
 
 
 %changelog
+* Mon Feb 9 2014 Ryan Cook <rcook@redhat.com> - 0.0.2-2
+- Improper start call
+
 * Thu Feb  5 2014 Ryan Cook <rcook@redhat.com> - 0.0.2-1
 - Added base functionality along with code review
 
